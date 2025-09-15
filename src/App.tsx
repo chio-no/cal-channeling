@@ -1,0 +1,9 @@
+import React from "react";
+import "./styles/globals.css";
+import { HomePage } from "./components/pages/HomePage";
+
+function App() {
+  return <HomePage />;
+}
+
+export default App;

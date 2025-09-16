@@ -109,8 +109,7 @@ export const NearestRestaurantInfo: React.FC = () => {
   return (
     <section className="section" aria-live="polite">
       <div className="header">
-        <H2>最も近い飲食店</H2>
-        <SmallMuted>（地図は表示しません／テキストのみ）</SmallMuted>
+        <H2>cal-channeling</H2>
       </div>
 
       <KeyValueList>
@@ -118,17 +117,6 @@ export const NearestRestaurantInfo: React.FC = () => {
         <TextRow label="分類（主）" value={offering} />
         <TextRow label="距離" value={distanceText} />
       </KeyValueList>
-
-      {!!tags.length && (
-        <>
-          <div style={{ height: 12 }} />
-          <div className="tags" aria-label="タグ">
-            {tags.map((t) => (
-              <Tag key={t}>{t}</Tag>
-            ))}
-          </div>
-        </>
-      )}
     </section>
   );
 };

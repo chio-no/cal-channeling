@@ -45,7 +45,42 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
 }
 
 export const NearestRestaurantInfo: React.FC = () => {
+  // --- フックの呼び出しをすべて先頭に移動 ---
+
   const geo = useGeolocation();
+
+  // geo が成功するまで coords は undefined になる
+  const coords = geo.status === "success" ? geo.coords : undefined;
+  // useNearestPlace は undefined を受け取っても 'canFetch' で処理をスキップするため安全
+  const nearest = useNearestPlace(coords?.latitude, coords?.longitude);
+
+  // nearest が成功するまで p は undefined になる
+  const p = nearest.status === "success" ? nearest.place : undefined;
+
+  // offering の計算（フックではないが、p に依存）
+  const offering = p
+    ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
+    : "飲食店"; // p がない場合のデフォルト値
+
+  // useMemo も常に呼び出す
+  const tags = useMemo(() => {
+    if (!p) return []; // p がない場合は空配列
+
+    const arr: string[] = [];
+    if (offering) arr.push(offering);
+    // types のうち分かりやすい代表をいくつかタグ化
+    (p.types ?? []).forEach((t) => {
+      if (/restaurant$/.test(t) || ["cafe", "bakery", "bar"].includes(t)) {
+        arr.push(t.replace(/_/g, " "));
+      }
+    });
+    // 重複排除・先頭2-3件だけ表示
+    return Array.from(new Set(arr)).slice(0, 3);
+  }, [offering, p]); // p や offering が undefined の間も実行されるが問題ない
+
+  // --- フックの呼び出し終わり ---
+
+  // --- 早期リターン（フックの後なのでOK） ---
 
   if (geo.status === "idle" || geo.status === "loading") {
     return <Spinner />;
@@ -54,9 +89,7 @@ export const NearestRestaurantInfo: React.FC = () => {
     return <ErrorMessage message={geo.message} />;
   }
 
-  const { latitude, longitude } = geo.coords;
-
-  const nearest = useNearestPlace(latitude, longitude);
+  // geo.status === "success" が確定
 
   if (nearest.status === "loading" || nearest.status === "idle") {
     return <Spinner />;
@@ -68,23 +101,10 @@ export const NearestRestaurantInfo: React.FC = () => {
     return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
   }
 
-  const p = nearest.place;
+  // nearest.status === "success" が確定
+  // p, offering, tags は既に計算済み
+
   const distanceText = formatDistance(nearest.distanceMeters);
-
-  const offering = inferOffering(p.types, p.primaryTypeDisplayName?.text);
-
-  const tags = useMemo(() => {
-    const arr: string[] = [];
-    if (offering) arr.push(offering);
-    // types のうち分かりやすい代表をいくつかタグ化
-    (p.types ?? []).forEach((t) => {
-      if (/restaurant$/.test(t) || ["cafe", "bakery", "bar"].includes(t)) {
-        arr.push(t.replace(/_/g, " "));
-      }
-    });
-    // 重複排除・先頭2-3件だけ表示
-    return Array.from(new Set(arr)).slice(0, 3);
-  }, [offering, p.types]);
 
   return (
     <section className="section" aria-live="polite">

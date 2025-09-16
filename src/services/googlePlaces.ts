@@ -5,16 +5,10 @@ const ENDPOINT = "https://places.googleapis.com/v1/places:searchNearby";
 // 取得するフィールド（FieldMask は必須）
 const FIELD_MASK = [
   "places.displayName",
-  "places.formattedAddress",
-  "places.shortFormattedAddress",
   "places.location",
   "places.primaryType",
   "places.primaryTypeDisplayName",
   "places.types",
-  "places.rating",
-  "places.userRatingCount",
-  "places.websiteUri",
-  "places.editorialSummary",
 ].join(",");
 
 export interface NearbyParams {

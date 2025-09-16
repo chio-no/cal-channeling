@@ -116,23 +116,7 @@ export const NearestRestaurantInfo: React.FC = () => {
       <KeyValueList>
         <TextRow label="店名" value={p.displayName?.text ?? "-"} />
         <TextRow label="分類（主）" value={offering} />
-        <TextRow
-          label="住所"
-          value={p.shortFormattedAddress ?? p.formattedAddress ?? "-"}
-        />
         <TextRow label="距離" value={distanceText} />
-        <TextRow
-          label="評価"
-          value={
-            (typeof p.rating === "number"
-              ? `${p.rating.toFixed(1)} / 5`
-              : "-") +
-            (typeof p.userRatingCount === "number"
-              ? `（${p.userRatingCount}件）`
-              : "")
-          }
-        />
-        <TextRow label="Web" value={p.websiteUri ?? "-"} />
       </KeyValueList>
 
       {!!tags.length && (
@@ -143,13 +127,6 @@ export const NearestRestaurantInfo: React.FC = () => {
               <Tag key={t}>{t}</Tag>
             ))}
           </div>
-        </>
-      )}
-
-      {p.editorialSummary?.text && (
-        <>
-          <div style={{ height: 12 }} />
-          <SmallMuted>{p.editorialSummary.text}</SmallMuted>
         </>
       )}
     </section>

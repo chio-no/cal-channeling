@@ -7,6 +7,7 @@ import { Spinner } from "../atoms/Spinner";
 import { ErrorMessage } from "../atoms/ErrorMessage";
 import { KeyValueList } from "../molecules/KeyValueList";
 import { TextRow } from "../atoms/TextRow";
+import { morseConvert } from "../../utils/convertMorse";
 import { Tag } from "../atoms/Tag";
 
 function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
@@ -62,7 +63,7 @@ export const NearestRestaurantInfo: React.FC = () => {
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
     : "飲食店"; // p がない場合のデフォルト値
 
-    console.log(p)
+  console.log(p);
 
   // useMemo も常に呼び出す
   const tags = useMemo(() => {
@@ -107,6 +108,10 @@ export const NearestRestaurantInfo: React.FC = () => {
   // p, offering, tags は既に計算済み
 
   const distanceText = formatDistance(nearest.distanceMeters);
+
+  //モールス信号を得る
+  const morseCode = morseConvert(p.primaryType);
+  console.log(morseCode);
 
   return (
     <section className="section" aria-live="polite">

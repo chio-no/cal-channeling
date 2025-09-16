@@ -62,6 +62,8 @@ export const NearestRestaurantInfo: React.FC = () => {
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
     : "飲食店"; // p がない場合のデフォルト値
 
+    console.log(p)
+
   // useMemo も常に呼び出す
   const tags = useMemo(() => {
     if (!p) return []; // p がない場合は空配列
@@ -108,10 +110,6 @@ export const NearestRestaurantInfo: React.FC = () => {
 
   return (
     <section className="section" aria-live="polite">
-      <div className="header">
-        <H2>cal-channeling</H2>
-      </div>
-
       <KeyValueList>
         <TextRow label="店名" value={p.displayName?.text ?? "-"} />
         <TextRow label="分類（主）" value={offering} />

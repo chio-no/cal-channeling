@@ -38,7 +38,7 @@ export function morseConvert(originChar: string | undefined): string[] {
     const underRemoveStr = originChar?.split("_")[0];
 
     //morseへの変換
-    for (const char of underRemoveStr) {
+    for (const char of underRemoveStr ?? "error") {
       morse.push(...morseCodeObj[char]);
     }
   }

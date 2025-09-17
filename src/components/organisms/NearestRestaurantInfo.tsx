@@ -112,7 +112,7 @@ export const NearestRestaurantInfo: React.FC = () => {
   const distanceText = formatDistance(nearest.distanceMeters);
 
   //モールス信号を得る
-  const morseCode = morseConvert(p.primaryType);
+  const morseCode = morseConvert(p!.primaryType);
 
   //モールス信号を波形に変換
   const morseWave = CombinedSound(morseCode);
@@ -133,7 +133,7 @@ export const NearestRestaurantInfo: React.FC = () => {
   return (
     <section className="section" aria-live="polite">
       <KeyValueList>
-        <TextRow label="店名" value={p.displayName?.text ?? "-"} />
+        <TextRow label="店名" value={p!.displayName?.text ?? "-"} />
         <TextRow label="分類（主）" value={offering} />
         <TextRow label="距離" value={distanceText} />
       </KeyValueList>

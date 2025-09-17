@@ -31,9 +31,9 @@ jobs:
 
       - name: Build
         env:
-          # リポジトリ名に合わせて置換してください。例: /nearest-restaurant/
+          # リポジトリ名に合わせる
           VITE_GHPAGES_BASE: /cal-channeling/
-          # リポジトリの Settings > Secrets and variables > Actions に追加した API キーを使用
+          # GitHub Secretsに設定したAPIキー
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
         run: npm run build
 

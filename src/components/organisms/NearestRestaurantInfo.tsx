@@ -2,13 +2,11 @@ import React, { useMemo } from "react";
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
 import { formatDistance } from "../../utils/distance";
-import { H2, SmallMuted } from "../atoms/Text";
 import { Spinner } from "../atoms/Spinner";
 import { ErrorMessage } from "../atoms/ErrorMessage";
 import { KeyValueList } from "../molecules/KeyValueList";
 import { TextRow } from "../atoms/TextRow";
 import { morseConvert } from "../../utils/convertMorse";
-import { Tag } from "../atoms/Tag";
 import { CombinedSound } from "../../utils/combineSound";
 
 const audioCtx = new (window.AudioContext ||
@@ -70,20 +68,20 @@ export const NearestRestaurantInfo: React.FC = () => {
   console.log(p);
 
   // useMemo も常に呼び出す
-  const tags = useMemo(() => {
-    if (!p) return []; // p がない場合は空配列
+  // const tags = useMemo(() => {
+  //   if (!p) return []; // p がない場合は空配列
 
-    const arr: string[] = [];
-    if (offering) arr.push(offering);
-    // types のうち分かりやすい代表をいくつかタグ化
-    (p.types ?? []).forEach((t) => {
-      if (/restaurant$/.test(t) || ["cafe", "bakery", "bar"].includes(t)) {
-        arr.push(t.replace(/_/g, " "));
-      }
-    });
-    // 重複排除・先頭2-3件だけ表示
-    return Array.from(new Set(arr)).slice(0, 3);
-  }, [offering, p]); // p や offering が undefined の間も実行されるが問題ない
+  //   const arr: string[] = [];
+  //   if (offering) arr.push(offering);
+  //   // types のうち分かりやすい代表をいくつかタグ化
+  //   (p.types ?? []).forEach((t) => {
+  //     if (/restaurant$/.test(t) || ["cafe", "bakery", "bar"].includes(t)) {
+  //       arr.push(t.replace(/_/g, " "));
+  //     }
+  //   });
+  //   // 重複排除・先頭2-3件だけ表示
+  //   return Array.from(new Set(arr)).slice(0, 3);
+  // }, [offering, p]); // p や offering が undefined の間も実行されるが問題ない
 
   // --- フックの呼び出し終わり ---
 

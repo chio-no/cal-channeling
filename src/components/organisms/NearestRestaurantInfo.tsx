@@ -120,15 +120,17 @@ export const NearestRestaurantInfo: React.FC = () => {
   const morseWave = CombinedSound(morseCode);
   console.log(morseWave);
 
-  const button = document.getElementById("sound");
-  button?.addEventListener("click", () => {
+  const handlePlayMorse = () => {
     if (morseWave) {
+      if (audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
       const source = audioCtx.createBufferSource();
       source.buffer = morseWave;
       source.connect(audioCtx.destination);
-      source.start(); // この行のコメントを外すと再生されます
+      source.start();
     }
-  });
+  };
 
   return (
     <section className="section" aria-live="polite">
@@ -137,7 +139,7 @@ export const NearestRestaurantInfo: React.FC = () => {
         <TextRow label="分類（主）" value={offering} />
         <TextRow label="距離" value={distanceText} />
       </KeyValueList>
-      <button id="sound">play</button>
+      <button onClick={handlePlayMorse}>play</button>
     </section>
   );
 };

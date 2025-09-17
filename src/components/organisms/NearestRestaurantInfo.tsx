@@ -137,7 +137,7 @@ export const NearestRestaurantInfo: React.FC = () => {
         <TextRow label="分類（主）" value={offering} />
         <TextRow label="距離" value={distanceText} />
       </KeyValueList>
-      <button onClick={handlePlayMorse}>play</button>
+      <button onClick={handlePlayMorse}>play voice</button>
     </section>
   );
 };

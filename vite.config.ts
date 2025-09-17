@@ -5,5 +5,5 @@ import basicCsl from "@vitejs/plugin-basic-ssl";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "./",
+  base: "/cal-channeling/",
 });

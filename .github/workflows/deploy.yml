@@ -35,7 +35,9 @@ jobs:
           VITE_GHPAGES_BASE: /cal-channeling/
           # GitHub Secretsに設定したAPIキー
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
-        run: npm run build
+        run: |
+          echo "API Key starts with: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY && substring(secrets.VITE_GOOGLE_MAPS_API_KEY, 0, 5) || 'NOT SET' }}"
+          npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

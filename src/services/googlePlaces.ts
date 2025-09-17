@@ -21,6 +21,7 @@ export interface NearbyParams {
 
 export async function searchNearbyFood(params: NearbyParams): Promise<Place[]> {
   const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+  console.log("API Key:", apiKey);
   if (!apiKey) {
     throw new Error("VITE_GOOGLE_MAPS_API_KEY が設定されていません。");
   }

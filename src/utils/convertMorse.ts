@@ -1,5 +1,5 @@
-const morseCodeObj: { [monoChar: string]: string } = {};
-morseCodeObj["a"] = "01";
+const morseCodeObj: { [monoChar: string]: string[] } = {};
+morseCodeObj["a"] = ["0", "1"];
 morseCodeObj["b"] = "1000";
 morseCodeObj["c"] = "1010";
 morseCodeObj["d"] = "100";

@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React from "react";
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
 import { formatDistance } from "../../utils/distance";

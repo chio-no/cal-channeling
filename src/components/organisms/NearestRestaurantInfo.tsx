@@ -9,6 +9,10 @@ import { KeyValueList } from "../molecules/KeyValueList";
 import { TextRow } from "../atoms/TextRow";
 import { morseConvert } from "../../utils/convertMorse";
 import { Tag } from "../atoms/Tag";
+import { CombinedSound } from "../../utils/combineSound";
+
+const audioCtx = new (window.AudioContext ||
+  (window as any).webkitAudioContext)();
 
 function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
   // 1) primaryTypeDisplayName が来ていれば最優先（ローカライズ済み）
@@ -111,7 +115,20 @@ export const NearestRestaurantInfo: React.FC = () => {
 
   //モールス信号を得る
   const morseCode = morseConvert(p.primaryType);
-  console.log(morseCode);
+
+  //モールス信号を波形に変換
+  const morseWave = CombinedSound(morseCode);
+  console.log(morseWave);
+
+  const button = document.getElementById("sound");
+  button?.addEventListener("click", () => {
+    if (morseWave) {
+      const source = audioCtx.createBufferSource();
+      source.buffer = morseWave;
+      source.connect(audioCtx.destination);
+      source.start(); // この行のコメントを外すと再生されます
+    }
+  });
 
   return (
     <section className="section" aria-live="polite">
@@ -120,6 +137,7 @@ export const NearestRestaurantInfo: React.FC = () => {
         <TextRow label="分類（主）" value={offering} />
         <TextRow label="距離" value={distanceText} />
       </KeyValueList>
+      <button id="sound">play</button>
     </section>
   );
 };

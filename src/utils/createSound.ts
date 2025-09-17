@@ -1,4 +1,4 @@
-export function createSound(input: "0" | "1"): AudioBuffer {
+export function createSound(input: string): AudioBuffer {
   const audioCtx = new (window.AudioContext ||
     (window as any).webkitAudioContext)();
   const duration = input === "0" ? 0.2 : 1.0; // 0: short, 1: long

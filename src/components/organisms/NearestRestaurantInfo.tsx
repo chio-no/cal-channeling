@@ -14,9 +14,6 @@ import { TextRow } from "../atoms/TextRow";
 import { morseConvert } from "../../utils/convertMorse";
 import { CombinedSound } from "../../utils/combineSound";
 
-const audioCtx = new (window.AudioContext ||
-  (window as any).webkitAudioContext)();
-
 function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
   // 1) primaryTypeDisplayName が来ていれば最優先（ローカライズ済み）
   if (primaryTypeDisplay) return primaryTypeDisplay;
@@ -55,6 +52,7 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
 export const NearestRestaurantInfo: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [distance, setDistance] = useState<number | null>(null);
+  const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const [targetPlaceState, setTargetPlaceState] = useState<NearestState>({
     status: "idle",
@@ -140,8 +138,11 @@ export const NearestRestaurantInfo: React.FC = () => {
       if (sourceNodeRef.current) {
         sourceNodeRef.current.stop();
       }
+      if (audioCtx && audioCtx.state !== "closed") {
+        audioCtx.close();
+      }
     };
-  }, []);
+  }, [audioCtx]);
 
   const offering = p
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
@@ -165,10 +166,7 @@ export const NearestRestaurantInfo: React.FC = () => {
       ? formatDistance(distance)
       : formatDistance(targetPlaceState.distanceMeters);
 
-  const morseCode = morseConvert(p!.primaryType);
-  const morseWave = CombinedSound(morseCode);
-
-  const handlePlayMorse = () => {
+  const handlePlayMorse = async () => {
     if (isPlaying) {
       if (sourceNodeRef.current) {
         sourceNodeRef.current.stop();
@@ -178,20 +176,31 @@ export const NearestRestaurantInfo: React.FC = () => {
       return;
     }
 
-    if (periodicGeo.status !== "success" || !morseWave || !p?.location) {
+    if (periodicGeo.status !== "success" || !p?.location) {
       return;
     }
 
-    if (audioCtx.state === "suspended") {
-      audioCtx.resume();
+    let currentAudioCtx = audioCtx;
+    if (!currentAudioCtx) {
+      currentAudioCtx = new (window.AudioContext ||
+        (window as any).webkitAudioContext)();
+      setAudioCtx(currentAudioCtx);
     }
 
-    const source = audioCtx.createBufferSource();
+    if (currentAudioCtx.state === "suspended") {
+      await currentAudioCtx.resume();
+    }
+    const morseCode = morseConvert(p!.primaryType);
+    const morseWave = CombinedSound(currentAudioCtx, morseCode);
+
+    if (!morseWave) return;
+
+    const source = currentAudioCtx.createBufferSource();
     source.buffer = morseWave;
     source.loop = true;
 
     const initialVolume = calculateVolume(periodicGeo.coords, p.location);
-    setupVolume(audioCtx, source, initialVolume);
+    setupVolume(currentAudioCtx, source, initialVolume);
 
     source.start();
     sourceNodeRef.current = source;
@@ -205,7 +214,9 @@ export const NearestRestaurantInfo: React.FC = () => {
         <TextRow label="分類（主）" value={offering} />
         <TextRow label="距離" value={distanceText} />
       </KeyValueList>
-      <button onClick={handlePlayMorse}>play voice</button>
+      <button onClick={handlePlayMorse}>
+        {isPlaying ? "Stop" : "Play Voice"}
+      </button>
     </section>
   );
 };

@@ -1,6 +1,7 @@
-export function createSound(input: string): AudioBuffer {
-  const audioCtx = new (window.AudioContext ||
-    (window as any).webkitAudioContext)();
+export function createSound(
+  audioCtx: AudioContext,
+  input: string
+): AudioBuffer {
   const duration = input === "0" ? 0.2 : 1.0; // 0: short, 1: long
   const sampleRate = audioCtx.sampleRate;
   const length = sampleRate * duration;

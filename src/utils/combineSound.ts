@@ -1,15 +1,15 @@
 import { createSound } from "./createSound";
 
-export function CombinedSound(inputs: string[]): AudioBuffer | null {
+export function CombinedSound(
+  audioCtx: AudioContext,
+  inputs: string[]
+): AudioBuffer | null {
   if (!inputs || inputs.length === 0) {
     return null;
   }
 
   // 1. 各inputに対してcreateSoundを呼び出し、AudioBufferの配列を生成
-  const audioBuffers = inputs.map((input) => createSound(input));
-
-  const audioCtx = new (window.AudioContext ||
-    (window as any).webkitAudioContext)();
+  const audioBuffers = inputs.map((input) => createSound(audioCtx, input));
 
   // 2. 連結後のAudioBufferの情報を計算
   const numberOfChannels = audioBuffers[0].numberOfChannels;

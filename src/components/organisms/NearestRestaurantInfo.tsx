@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
 import { formatDistance } from "../../utils/distance";
@@ -132,6 +132,14 @@ export const NearestRestaurantInfo: React.FC = () => {
       setIsPlaying(true);
     }
   };
+
+  useEffect(() => {
+    return () => {
+      if (sourceNode) {
+        sourceNode.stop();
+      }
+    };
+  }, [sourceNode]);
 
   return (
     <section className="section" aria-live="polite">

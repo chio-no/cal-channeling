@@ -62,5 +62,7 @@ export async function searchNearbyFood(params: NearbyParams): Promise<Place[]> {
 
   const data = await res.json();
   const places: Place[] = data?.places ?? [];
+  console.log("searchNearbyFood", places);
+
   return places;
 }

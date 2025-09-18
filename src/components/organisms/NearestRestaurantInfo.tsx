@@ -52,7 +52,7 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
 export const NearestRestaurantInfo: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [distance, setDistance] = useState<number | null>(null);
-  const [audioCtx, setAudioCtx] = useState<AudioContext | null>(null);
+  const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const [targetPlaceState, setTargetPlaceState] = useState<NearestState>({
     status: "idle",
@@ -138,11 +138,11 @@ export const NearestRestaurantInfo: React.FC = () => {
       if (sourceNodeRef.current) {
         sourceNodeRef.current.stop();
       }
-      if (audioCtx && audioCtx.state !== "closed") {
-        audioCtx.close();
+      if (audioCtxRef.current && audioCtxRef.current.state !== "closed") {
+        audioCtxRef.current.close();
       }
     };
-  }, [audioCtx]);
+  }, []);
 
   const offering = p
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
@@ -180,12 +180,11 @@ export const NearestRestaurantInfo: React.FC = () => {
       return;
     }
 
-    let currentAudioCtx = audioCtx;
-    if (!currentAudioCtx) {
-      currentAudioCtx = new (window.AudioContext ||
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new (window.AudioContext ||
         (window as any).webkitAudioContext)();
-      setAudioCtx(currentAudioCtx);
     }
+    const currentAudioCtx = audioCtxRef.current;
 
     if (currentAudioCtx.state === "suspended") {
       await currentAudioCtx.resume();

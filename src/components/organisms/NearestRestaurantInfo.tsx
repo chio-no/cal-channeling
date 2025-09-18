@@ -1,10 +1,12 @@
 import React, { useEffect, useState, useRef } from "react";
 import { usePeriodicGeolocation } from "../../hooks/usePeriodicGeolocation";
+import { useGeolocation } from "../../hooks/useGeolocation";
 import {
   calculateVolume,
   useVolumeControl,
 } from "../../hooks/useVolumeControl";
-import { useNearestPlace } from "../../hooks/useNearestPlace";
+import { searchNearbyFood } from "../../services/googlePlaces";
+import type { NearestState } from "../../hooks/useNearestPlace";
 import { formatDistance, haversineMeters } from "../../utils/distance";
 import { Spinner } from "../atoms/Spinner";
 import { ErrorMessage } from "../atoms/ErrorMessage";
@@ -52,24 +54,84 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
 }
 
 export const NearestRestaurantInfo: React.FC = () => {
-  //reactのhookはコンポーネントの先頭で呼び出すこと
   const [isPlaying, setIsPlaying] = useState(false);
   const [distance, setDistance] = useState<number | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
+  const [targetPlaceState, setTargetPlaceState] = useState<NearestState>({
+    status: "idle",
+  });
 
-  const geo = usePeriodicGeolocation();
-  const coords = geo.status === "success" ? geo.coords : undefined;
-  const nearest = useNearestPlace(coords?.latitude, coords?.longitude);
-  const p = nearest.status === "success" ? nearest.place : undefined;
+  const periodicGeo = usePeriodicGeolocation(); // 5秒ごとに現在地を更新
+  const initialGeo = useGeolocation(); // 初回のみ現在地を取得
+
+  const p =
+    targetPlaceState.status === "success" ? targetPlaceState.place : undefined;
   const { setup: setupVolume, updateVolume } = useVolumeControl(p?.location);
 
   useEffect(() => {
-    if (geo.status === "success" && p?.location) {
-      updateVolume(geo.coords);
-      const newDistance = haversineMeters(geo.coords, p.location);
+    // 初回のみ実行
+    if (initialGeo.status !== "success") return;
+
+    let aborted = false;
+    const { latitude, longitude } = initialGeo.coords;
+
+    (async () => {
+      try {
+        setTargetPlaceState({ status: "loading" });
+        const places = await searchNearbyFood({
+          lat: latitude,
+          lng: longitude,
+        });
+
+        if (aborted) return;
+        if (!places.length) {
+          setTargetPlaceState({ status: "empty" });
+          return;
+        }
+
+        const here = { latitude, longitude };
+        let best = places[0];
+        let bestDist = Number.POSITIVE_INFINITY;
+        for (const place of places) {
+          const loc = place.location;
+          if (!loc) continue;
+          const d = haversineMeters(here, loc);
+          if (d < bestDist) {
+            bestDist = d;
+            best = place;
+          }
+        }
+
+        if (bestDist === Number.POSITIVE_INFINITY) {
+          setTargetPlaceState({ status: "empty" });
+        } else {
+          setTargetPlaceState({
+            status: "success",
+            place: best,
+            distanceMeters: bestDist,
+          });
+        }
+      } catch (e: any) {
+        if (aborted) return;
+        setTargetPlaceState({
+          status: "error",
+          message: e?.message ?? "周辺検索でエラーが発生しました。",
+        });
+      }
+    })();
+
+    return () => {
+      aborted = true;
+    };
+  }, [initialGeo]);
+
+  useEffect(() => {
+    if (periodicGeo.status === "success" && p?.location) {
+      updateVolume(periodicGeo.coords);
+      const newDistance = haversineMeters(periodicGeo.coords, p.location);
       setDistance(newDistance);
     }
-  }, [geo, p?.location, updateVolume]);
+  }, [periodicGeo, p?.location, updateVolume]);
 
   useEffect(() => {
     return () => {
@@ -79,58 +141,29 @@ export const NearestRestaurantInfo: React.FC = () => {
     };
   }, []);
 
-  // offering の計算（フックではないが、p に依存）
   const offering = p
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
-    : "飲食店"; // p がない場合のデフォルト値
+    : "飲食店";
 
-  console.log(p);
-
-  // useMemo も常に呼び出す
-  // const tags = useMemo(() => {
-  //   if (!p) return []; // p がない場合は空配列
-
-  //   const arr: string[] = [];
-  //   if (offering) arr.push(offering);
-  //   // types のうち分かりやすい代表をいくつかタグ化
-  //   (p.types ?? []).forEach((t) => {
-  //     if (/restaurant$/.test(t) || ["cafe", "bakery", "bar"].includes(t)) {
-  //       arr.push(t.replace(/_/g, " "));
-  //     }
-  //   });
-  //   // 重複排除・先頭2-3件だけ表示
-  //   return Array.from(new Set(arr)).slice(0, 3);
-  // }, [offering, p]); // p や offering が undefined の間も実行されるが問題ない
-
-  if (geo.status === "idle" || geo.status === "loading") {
+  if (
+    targetPlaceState.status === "idle" ||
+    targetPlaceState.status === "loading"
+  ) {
     return <Spinner />;
   }
-  if (geo.status === "error") {
-    return <ErrorMessage message={geo.message} />;
+  if (targetPlaceState.status === "error") {
+    return <ErrorMessage message={targetPlaceState.message} />;
   }
-
-  // geo.status === "success" が確定
-
-  if (nearest.status === "loading" || nearest.status === "idle") {
-    return <Spinner />;
-  }
-  if (nearest.status === "error") {
-    return <ErrorMessage message={nearest.message} />;
-  }
-  if (nearest.status === "empty") {
+  if (targetPlaceState.status === "empty") {
     return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
   }
 
   const distanceText =
     distance !== null
       ? formatDistance(distance)
-      : formatDistance(nearest.distanceMeters);
+      : formatDistance(targetPlaceState.distanceMeters);
 
-  //モールス信号を得る
-  //!はnullアサーション演算子。nullやundefinedではないことを保証する
   const morseCode = morseConvert(p!.primaryType);
-
-  //モールス信号を波形に変換
   const morseWave = CombinedSound(morseCode);
 
   const handlePlayMorse = () => {
@@ -140,22 +173,27 @@ export const NearestRestaurantInfo: React.FC = () => {
         sourceNodeRef.current = null;
       }
       setIsPlaying(false);
-    } else if (morseWave) {
-      if (audioCtx.state === "suspended") {
-        audioCtx.resume();
-      }
-
-      const source = audioCtx.createBufferSource();
-      source.buffer = morseWave;
-      source.loop = true;
-
-      const initialVolume = calculateVolume(coords!, p!.location!);
-      setupVolume(audioCtx, source, initialVolume);
-
-      source.start();
-      sourceNodeRef.current = source;
-      setIsPlaying(true);
+      return;
     }
+
+    if (periodicGeo.status !== "success" || !morseWave || !p?.location) {
+      return;
+    }
+
+    if (audioCtx.state === "suspended") {
+      audioCtx.resume();
+    }
+
+    const source = audioCtx.createBufferSource();
+    source.buffer = morseWave;
+    source.loop = true;
+
+    const initialVolume = calculateVolume(periodicGeo.coords, p.location);
+    setupVolume(audioCtx, source, initialVolume);
+
+    source.start();
+    sourceNodeRef.current = source;
+    setIsPlaying(true);
   };
 
   return (

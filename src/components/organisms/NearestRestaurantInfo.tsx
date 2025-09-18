@@ -130,6 +130,7 @@ export const NearestRestaurantInfo: React.FC = () => {
     if (periodicGeo.status === "success" && p?.location) {
       updateVolume(periodicGeo.coords);
       const newDistance = haversineMeters(periodicGeo.coords, p.location);
+      console.log("distance updated:", newDistance);
       setDistance(newDistance);
     }
   }, [periodicGeo, p?.location, updateVolume]);

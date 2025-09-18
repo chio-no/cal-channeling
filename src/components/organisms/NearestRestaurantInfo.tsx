@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
 import { formatDistance } from "../../utils/distance";
@@ -50,9 +50,7 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
 export const NearestRestaurantInfo: React.FC = () => {
   //reactのhookはコンポーネントの先頭で呼び出すこと
   const [isPlaying, setIsPlaying] = useState(false);
-  const [sourceNode, setSourceNode] = useState<AudioBufferSourceNode | null>(
-    null
-  );
+  const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
 
   const geo = useGeolocation();
 
@@ -60,6 +58,14 @@ export const NearestRestaurantInfo: React.FC = () => {
   const coords = geo.status === "success" ? geo.coords : undefined;
   // useNearestPlace は undefined を受け取っても 'canFetch' で処理をスキップするため安全
   const nearest = useNearestPlace(coords?.latitude, coords?.longitude);
+
+  useEffect(() => {
+    return () => {
+      if (sourceNodeRef.current) {
+        sourceNodeRef.current.stop();
+      }
+    };
+  }, []);
 
   // nearest が成功するまで p は undefined になる
   const p = nearest.status === "success" ? nearest.place : undefined;
@@ -116,30 +122,26 @@ export const NearestRestaurantInfo: React.FC = () => {
   const morseWave = CombinedSound(morseCode);
 
   const handlePlayMorse = () => {
-    if (isPlaying && sourceNode) {
-      sourceNode.stop();
+    if (isPlaying) {
+      if (sourceNodeRef.current) {
+        sourceNodeRef.current.stop();
+        sourceNodeRef.current = null;
+      }
       setIsPlaying(false);
-      setSourceNode(null);
     } else if (morseWave) {
       if (audioCtx.state === "suspended") {
         audioCtx.resume();
       }
+
       const source = audioCtx.createBufferSource();
       source.buffer = morseWave;
+      source.loop = true;
       source.connect(audioCtx.destination);
       source.start();
-      setSourceNode(source);
+      sourceNodeRef.current = source;
       setIsPlaying(true);
     }
   };
-
-  useEffect(() => {
-    return () => {
-      if (sourceNode) {
-        sourceNode.stop();
-      }
-    };
-  }, [sourceNode]);
 
   return (
     <section className="section" aria-live="polite">

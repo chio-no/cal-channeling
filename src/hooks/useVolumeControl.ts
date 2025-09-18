@@ -14,9 +14,14 @@ export function calculateVolume(
   };
   const distance = haversineMeters(currentLatLng, targetLocation);
   // 距離が遠いほど音が小さくなるように音量を計算（線形減衰）
-  const volume = (-200 / 950) * (distance - 50) + 100;
+  // 距離が1500mで音量0、50mで音量100となるように線形計算
+  const rawVolume = (100 * (1500 - distance)) / (1500 - 50);
 
-  return volume;
+  // 計算結果を0から100の範囲内に収める（クランプ処理）
+  const clampedVolume = Math.max(0, Math.min(100, rawVolume));
+
+  // Web Audio APIのGainNodeで扱うため、音量を0から1の範囲に正規化
+  return clampedVolume;
 }
 
 export function useVolumeControl(targetLocation?: LatLng) {

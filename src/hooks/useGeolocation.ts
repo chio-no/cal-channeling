@@ -1,10 +1,5 @@
 import { useEffect, useState } from "react";
-
-export type GeoState =
-  | { status: "idle" }
-  | { status: "loading" }
-  | { status: "success"; coords: GeolocationCoordinates }
-  | { status: "error"; message: string };
+import type { GeoState } from "src/types/geo";
 
 export function useGeolocation() {
   const [state, setState] = useState<GeoState>({ status: "idle" });

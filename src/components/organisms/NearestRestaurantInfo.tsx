@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useGeolocation } from "../../hooks/useGeolocation";
+import { usePeriodicGeolocation } from "src/hooks/usePeriodicGeolocation";
+import { useVolumeControl } from "src/hooks/useVolumeControl";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
-import { formatDistance } from "../../utils/distance";
+import { formatDistance, haversineMeters } from "../../utils/distance";
 import { Spinner } from "../atoms/Spinner";
 import { ErrorMessage } from "../atoms/ErrorMessage";
 import { KeyValueList } from "../molecules/KeyValueList";
@@ -50,14 +51,22 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
 export const NearestRestaurantInfo: React.FC = () => {
   //reactのhookはコンポーネントの先頭で呼び出すこと
   const [isPlaying, setIsPlaying] = useState(false);
+  const [distance, setDistance] = useState<number | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
 
-  const geo = useGeolocation();
-
-  // geo が成功するまで coords は undefined になる
+  const geo = usePeriodicGeolocation();
   const coords = geo.status === "success" ? geo.coords : undefined;
-  // useNearestPlace は undefined を受け取っても 'canFetch' で処理をスキップするため安全
   const nearest = useNearestPlace(coords?.latitude, coords?.longitude);
+  const p = nearest.status === "success" ? nearest.place : undefined;
+  const { setup: setupVolume, updateVolume } = useVolumeControl(p?.location);
+
+  useEffect(() => {
+    if (geo.status === "success" && p?.location) {
+      updateVolume(geo.coords);
+      const newDistance = haversineMeters(geo.coords, p.location);
+      setDistance(newDistance);
+    }
+  }, [geo, p?.location, updateVolume]);
 
   useEffect(() => {
     return () => {
@@ -66,9 +75,6 @@ export const NearestRestaurantInfo: React.FC = () => {
       }
     };
   }, []);
-
-  // nearest が成功するまで p は undefined になる
-  const p = nearest.status === "success" ? nearest.place : undefined;
 
   // offering の計算（フックではないが、p に依存）
   const offering = p
@@ -112,7 +118,10 @@ export const NearestRestaurantInfo: React.FC = () => {
     return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
   }
 
-  const distanceText = formatDistance(nearest.distanceMeters);
+  const distanceText =
+    distance !== null
+      ? formatDistance(distance)
+      : formatDistance(nearest.distanceMeters);
 
   //モールス信号を得る
   //!はnullアサーション演算子。nullやundefinedではないことを保証する
@@ -136,7 +145,8 @@ export const NearestRestaurantInfo: React.FC = () => {
       const source = audioCtx.createBufferSource();
       source.buffer = morseWave;
       source.loop = true;
-      source.connect(audioCtx.destination);
+      setupVolume(audioCtx, source);
+
       source.start();
       sourceNodeRef.current = source;
       setIsPlaying(true);

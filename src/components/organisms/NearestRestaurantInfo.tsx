@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { usePeriodicGeolocation } from "../../hooks/usePeriodicGeolocation";
-import { useGeolocation } from "../../hooks/useGeolocation";
 import {
   calculateVolume,
   useVolumeControl,
@@ -60,72 +59,74 @@ export const NearestRestaurantInfo: React.FC = () => {
   const [targetPlaceState, setTargetPlaceState] = useState<NearestState>({
     status: "idle",
   });
+  const hasFetchedNearestPlace = useRef(false);
 
   const periodicGeo = usePeriodicGeolocation(); // 5秒ごとに現在地を更新
-  const initialGeo = useGeolocation(); // 初回のみ現在地を取得
 
   const p =
     targetPlaceState.status === "success" ? targetPlaceState.place : undefined;
   const { setup: setupVolume, updateVolume } = useVolumeControl(p?.location);
 
   useEffect(() => {
-    // 初回のみ実行
-    if (initialGeo.status !== "success") return;
+    // 位置情報が取得でき、かつ店舗検索が未実行の場合に一度だけ実行
+    if (periodicGeo.status === "success" && !hasFetchedNearestPlace.current) {
+      hasFetchedNearestPlace.current = true; // 実行済フラグを立てる
+      let aborted = false;
+      const { latitude, longitude } = periodicGeo.coords;
 
-    let aborted = false;
-    const { latitude, longitude } = initialGeo.coords;
+      (async () => {
+        try {
+          setTargetPlaceState({ status: "loading" });
+          const places = await searchNearbyFood({
+            lat: latitude,
+            lng: longitude,
+          });
 
-    (async () => {
-      try {
-        setTargetPlaceState({ status: "loading" });
-        const places = await searchNearbyFood({
-          lat: latitude,
-          lng: longitude,
-        });
-
-        if (aborted) return;
-        if (!places.length) {
-          setTargetPlaceState({ status: "empty" });
-          return;
-        }
-
-        const here = { latitude, longitude };
-        let best = places[0];
-        let bestDist = Number.POSITIVE_INFINITY;
-        for (const place of places) {
-          const loc = place.location;
-          if (!loc) continue;
-          const d = haversineMeters(here, loc);
-          if (d < bestDist) {
-            bestDist = d;
-            best = place;
+          if (aborted) return;
+          if (!places.length) {
+            setTargetPlaceState({ status: "empty" });
+            return;
           }
-        }
 
-        if (bestDist === Number.POSITIVE_INFINITY) {
-          setTargetPlaceState({ status: "empty" });
-        } else {
+          const here = { latitude, longitude };
+          let best = places[0];
+          let bestDist = Number.POSITIVE_INFINITY;
+          for (const place of places) {
+            const loc = place.location;
+            if (!loc) continue;
+            const d = haversineMeters(here, loc);
+            if (d < bestDist) {
+              bestDist = d;
+              best = place;
+            }
+          }
+
+          if (bestDist === Number.POSITIVE_INFINITY) {
+            setTargetPlaceState({ status: "empty" });
+          } else {
+            setTargetPlaceState({
+              status: "success",
+              place: best,
+              distanceMeters: bestDist,
+            });
+          }
+        } catch (e: any) {
+          if (aborted) return;
           setTargetPlaceState({
-            status: "success",
-            place: best,
-            distanceMeters: bestDist,
+            status: "error",
+            message: e?.message ?? "周辺検索でエラーが発生しました。",
           });
         }
-      } catch (e: any) {
-        if (aborted) return;
-        setTargetPlaceState({
-          status: "error",
-          message: e?.message ?? "周辺検索でエラーが発生しました。",
-        });
-      }
-    })();
+      })();
 
-    return () => {
-      aborted = true;
-    };
-  }, [initialGeo]);
+      return () => {
+        aborted = true;
+      };
+    }
+  }, [periodicGeo]);
 
   useEffect(() => {
+    // 5秒ごとに距離と音量を更新
     if (periodicGeo.status === "success" && p?.location) {
       updateVolume(periodicGeo.coords);
       const newDistance = haversineMeters(periodicGeo.coords, p.location);

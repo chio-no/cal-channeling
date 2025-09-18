@@ -2,7 +2,7 @@ import { useRef, useCallback } from "react";
 import { haversineMeters } from "../utils/distance";
 import type { LatLng } from "../types/place";
 
-const MAX_DISTANCE = 50; // 音量が0になる最大距離 (m)
+//const MAX_DISTANCE = 50; // 音量が0になる最大距離 (m)
 
 export function calculateVolume(
   currentCoords: GeolocationCoordinates,
@@ -15,7 +15,7 @@ export function calculateVolume(
   const distance = haversineMeters(currentLatLng, targetLocation);
   // 距離が遠いほど音が小さくなるように音量を計算（線形減衰）
   const v = 1 - (0.9 * (distance - 50)) / 1450;
-  const volume = Math.max(0, 1 - distance / MAX_DISTANCE);
+  //const volume = Math.max(0, 1 - distance / MAX_DISTANCE);
   return v;
 }
 

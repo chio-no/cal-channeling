@@ -4,12 +4,31 @@ import type { LatLng } from "../types/place";
 
 const MAX_DISTANCE = 50; // 音量が0になる最大距離 (m)
 
+export function calculateVolume(
+  currentCoords: GeolocationCoordinates,
+  targetLocation: LatLng
+): number {
+  const currentLatLng = {
+    latitude: currentCoords.latitude,
+    longitude: currentCoords.longitude,
+  };
+  const distance = haversineMeters(currentLatLng, targetLocation);
+  // 距離が遠いほど音が小さくなるように音量を計算（線形減衰）
+  const volume = Math.max(0, 1 - distance / MAX_DISTANCE);
+  return volume;
+}
+
 export function useVolumeControl(targetLocation?: LatLng) {
   const gainNodeRef = useRef<GainNode | null>(null);
 
   const setup = useCallback(
-    (audioCtx: AudioContext, source: AudioBufferSourceNode) => {
+    (
+      audioCtx: AudioContext,
+      source: AudioBufferSourceNode,
+      initialVolume: number
+    ) => {
       const gainNode = audioCtx.createGain();
+      gainNode.gain.setValueAtTime(initialVolume, audioCtx.currentTime);
       source.connect(gainNode);
       gainNode.connect(audioCtx.destination);
       gainNodeRef.current = gainNode;
@@ -23,21 +42,12 @@ export function useVolumeControl(targetLocation?: LatLng) {
         return;
       }
 
-      const currentLatLng = {
-        latitude: currentCoords.latitude,
-        longitude: currentCoords.longitude,
-      };
-
-      const distance = haversineMeters(currentLatLng, targetLocation);
-
-      // 距離が遠いほど音が小さくなるように音量を計算（線形減衰）
-      const newVolume = Math.max(0, 1 - distance / MAX_DISTANCE);
-
+      const newVolume = calculateVolume(currentCoords, targetLocation);
       // gainの値をスムーズに変更
       gainNodeRef.current.gain.setTargetAtTime(
         newVolume,
         gainNodeRef.current.context.currentTime,
-        0.5 // 0.5秒かけて変化
+        0.1 // 0.5秒かけて変化
       );
     },
     [targetLocation]

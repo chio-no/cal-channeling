@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
 import { usePeriodicGeolocation } from "../../hooks/usePeriodicGeolocation";
-import { useVolumeControl } from "../../hooks/useVolumeControl";
+import {
+  calculateVolume,
+  useVolumeControl,
+} from "../../hooks/useVolumeControl";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
 import { formatDistance, haversineMeters } from "../../utils/distance";
 import { Spinner } from "../atoms/Spinner";
@@ -145,7 +148,9 @@ export const NearestRestaurantInfo: React.FC = () => {
       const source = audioCtx.createBufferSource();
       source.buffer = morseWave;
       source.loop = true;
-      setupVolume(audioCtx, source);
+
+      const initialVolume = calculateVolume(coords!, p!.location!);
+      setupVolume(audioCtx, source, initialVolume);
 
       source.start();
       sourceNodeRef.current = source;

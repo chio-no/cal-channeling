@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useGeolocation } from "../../hooks/useGeolocation";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
 import { formatDistance } from "../../utils/distance";
@@ -48,7 +48,11 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
 }
 
 export const NearestRestaurantInfo: React.FC = () => {
-  // --- フックの呼び出しをすべて先頭に移動 ---
+  //reactのhookはコンポーネントの先頭で呼び出すこと
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [sourceNode, setSourceNode] = useState<AudioBufferSourceNode | null>(
+    null
+  );
 
   const geo = useGeolocation();
 
@@ -83,10 +87,6 @@ export const NearestRestaurantInfo: React.FC = () => {
   //   return Array.from(new Set(arr)).slice(0, 3);
   // }, [offering, p]); // p や offering が undefined の間も実行されるが問題ない
 
-  // --- フックの呼び出し終わり ---
-
-  // --- 早期リターン（フックの後なのでOK） ---
-
   if (geo.status === "idle" || geo.status === "loading") {
     return <Spinner />;
   }
@@ -106,20 +106,21 @@ export const NearestRestaurantInfo: React.FC = () => {
     return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
   }
 
-  // nearest.status === "success" が確定
-  // p, offering, tags は既に計算済み
-
   const distanceText = formatDistance(nearest.distanceMeters);
 
   //モールス信号を得る
+  //!はnullアサーション演算子。nullやundefinedではないことを保証する
   const morseCode = morseConvert(p!.primaryType);
 
   //モールス信号を波形に変換
   const morseWave = CombinedSound(morseCode);
-  console.log(morseWave);
 
   const handlePlayMorse = () => {
-    if (morseWave) {
+    if (isPlaying && sourceNode) {
+      sourceNode.stop();
+      setIsPlaying(false);
+      setSourceNode(null);
+    } else if (morseWave) {
       if (audioCtx.state === "suspended") {
         audioCtx.resume();
       }
@@ -127,6 +128,8 @@ export const NearestRestaurantInfo: React.FC = () => {
       source.buffer = morseWave;
       source.connect(audioCtx.destination);
       source.start();
+      setSourceNode(source);
+      setIsPlaying(true);
     }
   };
 

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
-import { usePeriodicGeolocation } from "src/hooks/usePeriodicGeolocation";
-import { useVolumeControl } from "src/hooks/useVolumeControl";
+import { usePeriodicGeolocation } from "../../hooks/usePeriodicGeolocation";
+import { useVolumeControl } from "../../hooks/useVolumeControl";
 import { useNearestPlace } from "../../hooks/useNearestPlace";
 import { formatDistance, haversineMeters } from "../../utils/distance";
 import { Spinner } from "../atoms/Spinner";

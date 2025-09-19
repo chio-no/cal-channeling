@@ -107,7 +107,10 @@ export const NearestRestaurantInfo = forwardRef<
           }
 
           const here = { latitude, longitude };
-          let best = places[0];
+          //ヒットした店舗からランダムに一つ選ぶ
+          const placeIndex = Math.floor(Math.random() * places.length);
+          let best = places[placeIndex];
+          console.log("selected place:", best);
           let bestDist = Number.POSITIVE_INFINITY;
           for (const place of places) {
             const loc = place.location;

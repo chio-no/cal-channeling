@@ -1,17 +1,8 @@
 import { forwardRef } from "react";
 
-interface Props {
-  width: number;
-  height: number;
-}
-
-export const AudioVisualizerCanvas = forwardRef<HTMLCanvasElement, Props>(
-  ({ width, height }, ref) => (
-    <canvas
-      ref={ref}
-      width={width}
-      height={height}
-      style={{ backgroundColor: "#111" }}
-    />
-  )
-);
+export const AudioVisualizerCanvas = forwardRef<HTMLCanvasElement>((_, ref) => (
+  <canvas
+    ref={ref}
+    style={{ backgroundColor: "#111", display: "block", width: "100%" }}
+  />
+));

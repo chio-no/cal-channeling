@@ -78,3 +78,21 @@ body {
 .error {
   color: #b91c1c;
 }
+
+/* スマートフォン向けのスタイル */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px 12px 32px;
+  }
+  .h1 {
+    font-size: 1.2rem;
+  }
+  .kv {
+    grid-template-columns: 1fr;
+    grid-row-gap: 8px;
+  }
+  .kv dt {
+    font-weight: bold;
+    color: var(--fg);
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useLayoutEffect } from "react";
 import { AudioVisualizerCanvas } from "../atoms/AudioVisualizerCanvas";
 
 interface Props {
@@ -8,6 +8,23 @@ interface Props {
 
 export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const resizeCanvas = () => {
+    const canvas = canvasRef.current;
+    const container = containerRef.current;
+    if (canvas && container) {
+      const { width } = container.getBoundingClientRect();
+      canvas.width = width;
+      canvas.height = 100;
+    }
+  };
+
+  useLayoutEffect(() => {
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+    return () => window.removeEventListener("resize", resizeCanvas);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -60,5 +77,12 @@ export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
     };
   }, [isPlaying, analyser]);
 
-  return <AudioVisualizerCanvas ref={canvasRef} width={686} height={100} />;
+  return (
+    <div
+      ref={containerRef}
+      style={{ width: "100%", maxWidth: "686px", margin: "0 auto" }}
+    >
+      <AudioVisualizerCanvas ref={canvasRef} />
+    </div>
+  );
 };

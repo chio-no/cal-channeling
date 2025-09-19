@@ -245,7 +245,7 @@ export const NearestRestaurantInfo = forwardRef<
           if (targetPlaceState.status === "empty") {
             return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
           }
-          return <section className="section" aria-live="polite"></section>;
+          return <section></section>;
         })()}
       </div>
     </div>

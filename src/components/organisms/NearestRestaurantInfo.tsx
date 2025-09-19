@@ -1,4 +1,10 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  forwardRef,
+  useImperativeHandle,
+} from "react";
 import { usePeriodicGeolocation } from "../../hooks/usePeriodicGeolocation";
 import {
   calculateVolume,
@@ -49,7 +55,14 @@ function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
   return "飲食店";
 }
 
-export const NearestRestaurantInfo: React.FC = () => {
+export interface NearestRestaurantInfoHandle {
+  handlePlayMorse: () => void;
+}
+
+export const NearestRestaurantInfo = forwardRef<
+  NearestRestaurantInfoHandle,
+  {}
+>((_, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [distance, setDistance] = useState<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -58,13 +71,16 @@ export const NearestRestaurantInfo: React.FC = () => {
     status: "idle",
   });
   const hasFetchedNearestPlace = useRef(false);
-  const hasAutoPlayed = useRef(false);
 
   const periodicGeo = usePeriodicGeolocation(); // 5秒ごとに現在地を更新
 
   const p =
     targetPlaceState.status === "success" ? targetPlaceState.place : undefined;
   const { setup: setupVolume, updateVolume } = useVolumeControl(p?.location);
+
+  useImperativeHandle(ref, () => ({
+    handlePlayMorse,
+  }));
 
   useEffect(() => {
     // 位置情報が取得でき、かつ店舗検索が未実行の場合に一度だけ実行
@@ -189,14 +205,6 @@ export const NearestRestaurantInfo: React.FC = () => {
     setIsPlaying(true);
   };
 
-  useEffect(() => {
-    if (targetPlaceState.status === "success" && !hasAutoPlayed.current) {
-      handlePlayMorse();
-      hasAutoPlayed.current = true;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [targetPlaceState.status]);
-
   if (
     targetPlaceState.status === "idle" ||
     targetPlaceState.status === "loading"
@@ -221,10 +229,8 @@ export const NearestRestaurantInfo: React.FC = () => {
         <TextRow label="店名" value={p!.displayName?.text ?? "-"} />
         <TextRow label="分類（主）" value={offering} />
         <TextRow label="距離" value={distanceText} />
+        <TextRow label="再生状態" value={isPlaying ? "再生中" : "停止中"} />
       </KeyValueList>
-      <button onClick={handlePlayMorse}>
-        {isPlaying ? "Stop" : "Play Voice"}
-      </button>
     </section>
   );
-};
+});

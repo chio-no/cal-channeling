@@ -15,7 +15,6 @@ import type { NearestState } from "../../hooks/useNearestPlace";
 import { haversineMeters } from "../../utils/distance";
 import { Spinner } from "../atoms/Spinner";
 import { ErrorMessage } from "../atoms/ErrorMessage";
-import { TextRow } from "../atoms/TextRow";
 import { morseConvert } from "../../utils/convertMorse";
 import { CombinedSound } from "../../utils/combineSound";
 import { AudioVisualizer } from "../molecules/AudioVisualizer";
@@ -246,14 +245,7 @@ export const NearestRestaurantInfo = forwardRef<
           if (targetPlaceState.status === "empty") {
             return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
           }
-          return (
-            <section className="section" aria-live="polite">
-              <TextRow
-                label="再生状態"
-                value={isPlaying ? "再生中" : "停止中"}
-              />
-            </section>
-          );
+          return <section className="section" aria-live="polite"></section>;
         })()}
       </div>
     </div>

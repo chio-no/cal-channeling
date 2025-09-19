@@ -58,6 +58,7 @@ export const NearestRestaurantInfo: React.FC = () => {
     status: "idle",
   });
   const hasFetchedNearestPlace = useRef(false);
+  const hasAutoPlayed = useRef(false);
 
   const periodicGeo = usePeriodicGeolocation(); // 5秒ごとに現在地を更新
 
@@ -148,24 +149,6 @@ export const NearestRestaurantInfo: React.FC = () => {
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
     : "飲食店";
 
-  if (
-    targetPlaceState.status === "idle" ||
-    targetPlaceState.status === "loading"
-  ) {
-    return <Spinner />;
-  }
-  if (targetPlaceState.status === "error") {
-    return <ErrorMessage message={targetPlaceState.message} />;
-  }
-  if (targetPlaceState.status === "empty") {
-    return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
-  }
-
-  const distanceText =
-    distance !== null
-      ? formatDistance(distance)
-      : formatDistance(targetPlaceState.distanceMeters);
-
   const handlePlayMorse = async () => {
     if (isPlaying) {
       if (sourceNodeRef.current) {
@@ -205,6 +188,32 @@ export const NearestRestaurantInfo: React.FC = () => {
     sourceNodeRef.current = source;
     setIsPlaying(true);
   };
+
+  useEffect(() => {
+    if (targetPlaceState.status === "success" && !hasAutoPlayed.current) {
+      handlePlayMorse();
+      hasAutoPlayed.current = true;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetPlaceState.status]);
+
+  if (
+    targetPlaceState.status === "idle" ||
+    targetPlaceState.status === "loading"
+  ) {
+    return <Spinner />;
+  }
+  if (targetPlaceState.status === "error") {
+    return <ErrorMessage message={targetPlaceState.message} />;
+  }
+  if (targetPlaceState.status === "empty") {
+    return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
+  }
+
+  const distanceText =
+    distance !== null
+      ? formatDistance(distance)
+      : formatDistance(targetPlaceState.distanceMeters);
 
   return (
     <section className="section" aria-live="polite">

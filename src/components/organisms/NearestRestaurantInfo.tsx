@@ -225,31 +225,36 @@ export const NearestRestaurantInfo = forwardRef<
     setIsPlaying(true);
   };
 
-  if (
-    targetPlaceState.status === "idle" ||
-    targetPlaceState.status === "loading"
-  ) {
-    return <Spinner />;
-  }
-  if (targetPlaceState.status === "error") {
-    return <ErrorMessage message={targetPlaceState.message} />;
-  }
-  if (targetPlaceState.status === "empty") {
-    return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
-  }
-
-  // const distanceText =
-  //   distance !== null
-  //     ? formatDistance(distance)
-  //     : formatDistance(targetPlaceState.distanceMeters);
+  const hasContent =
+    targetPlaceState.status !== "idle" && targetPlaceState.status !== "loading";
 
   return (
     <div>
       <AudioVisualizer analyser={analyser} isPlaying={isPlaying} />
-      <div className="content-overlay">
-        <section className="section" aria-live="polite">
-          <TextRow label="再生状態" value={isPlaying ? "再生中" : "停止中"} />
-        </section>
+
+      <div className={`content-overlay ${hasContent ? "has-content" : ""}`}>
+        {(() => {
+          if (
+            targetPlaceState.status === "idle" ||
+            targetPlaceState.status === "loading"
+          ) {
+            return <Spinner />;
+          }
+          if (targetPlaceState.status === "error") {
+            return <ErrorMessage message={targetPlaceState.message} />;
+          }
+          if (targetPlaceState.status === "empty") {
+            return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
+          }
+          return (
+            <section className="section" aria-live="polite">
+              <TextRow
+                label="再生状態"
+                value={isPlaying ? "再生中" : "停止中"}
+              />
+            </section>
+          );
+        })()}
       </div>
     </div>
   );

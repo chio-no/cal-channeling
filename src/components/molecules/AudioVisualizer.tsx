@@ -24,22 +24,13 @@ export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!isPlaying || !analyser || !canvas) {
-      if (canvas) {
-        const context = canvas.getContext("2d");
-        context?.clearRect(0, 0, canvas.width, canvas.height);
-      }
-      return;
-    }
+    if (!canvas) return;
 
     const context = canvas.getContext("2d")!;
-    const bufferLength = analyser.frequencyBinCount;
-    const dataArray = new Uint8Array(bufferLength);
     let animationFrameId: number;
 
     const draw = () => {
       animationFrameId = requestAnimationFrame(draw);
-      analyser.getByteTimeDomainData(dataArray);
 
       context.fillStyle = "#111";
       context.fillRect(0, 0, canvas.width, canvas.height);
@@ -47,22 +38,29 @@ export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
       context.strokeStyle = "#646cff";
       context.beginPath();
 
-      const sliceWidth = (canvas.width * 1.0) / bufferLength;
-      let x = 0;
+      if (isPlaying && analyser) {
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+        analyser.getByteTimeDomainData(dataArray);
+        const sliceWidth = (canvas.width * 1.0) / bufferLength;
+        let x = 0;
 
-      for (let i = 0; i < bufferLength; i++) {
-        const v = dataArray[i] / 128.0;
-        const y = (v * canvas.height) / 2;
-
-        if (i === 0) {
-          context.moveTo(x, y);
-        } else {
-          context.lineTo(x, y);
+        for (let i = 0; i < bufferLength; i++) {
+          const v = dataArray[i] / 128.0;
+          const y = (v * canvas.height) / 2;
+          if (i === 0) {
+            context.moveTo(x, y);
+          } else {
+            context.lineTo(x, y);
+          }
+          x += sliceWidth;
         }
-        x += sliceWidth;
+        context.lineTo(canvas.width, canvas.height / 2);
+      } else {
+        // isPlayingがfalse、またはanalyserがない場合は中央に線を描画
+        context.moveTo(0, canvas.height / 2);
+        context.lineTo(canvas.width, canvas.height / 2);
       }
-
-      context.lineTo(canvas.width, canvas.height / 2);
       context.stroke();
     };
 
@@ -71,7 +69,7 @@ export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isPlaying, analyser, canvasRef]);
+  }, [isPlaying, analyser]);
 
   return (
     <div className="visualizer-fullscreen">

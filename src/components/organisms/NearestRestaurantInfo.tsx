@@ -12,10 +12,9 @@ import {
 } from "../../hooks/useVolumeControl";
 import { searchNearbyFood } from "../../services/googlePlaces";
 import type { NearestState } from "../../hooks/useNearestPlace";
-import { formatDistance, haversineMeters } from "../../utils/distance";
+import { haversineMeters } from "../../utils/distance";
 import { Spinner } from "../atoms/Spinner";
 import { ErrorMessage } from "../atoms/ErrorMessage";
-import { KeyValueList } from "../molecules/KeyValueList";
 import { TextRow } from "../atoms/TextRow";
 import { morseConvert } from "../../utils/convertMorse";
 import { CombinedSound } from "../../utils/combineSound";
@@ -65,7 +64,6 @@ export const NearestRestaurantInfo = forwardRef<
   {}
 >((_, ref) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [distance, setDistance] = useState<number | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<AudioBufferSourceNode | null>(null);
   const [targetPlaceState, setTargetPlaceState] = useState<NearestState>({
@@ -152,7 +150,7 @@ export const NearestRestaurantInfo = forwardRef<
       updateVolume(periodicGeo.coords);
       const newDistance = haversineMeters(periodicGeo.coords, p.location);
       console.log("distance updated:", newDistance);
-      setDistance(newDistance);
+      // setDistance(newDistance);
     }
   }, [periodicGeo, p?.location, updateVolume]);
 
@@ -183,6 +181,8 @@ export const NearestRestaurantInfo = forwardRef<
   const offering = p
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
     : "飲食店";
+
+  console.log(offering);
 
   const handlePlayMorse = async () => {
     if (isPlaying) {
@@ -238,21 +238,16 @@ export const NearestRestaurantInfo = forwardRef<
     return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
   }
 
-  const distanceText =
-    distance !== null
-      ? formatDistance(distance)
-      : formatDistance(targetPlaceState.distanceMeters);
+  // const distanceText =
+  //   distance !== null
+  //     ? formatDistance(distance)
+  //     : formatDistance(targetPlaceState.distanceMeters);
 
   return (
     <section className="section" aria-live="polite">
       <AudioVisualizer analyser={analyser} isPlaying={isPlaying} />
       <div style={{ height: 16 }} />
-      <KeyValueList>
-        <TextRow label="店名" value={p!.displayName?.text ?? "-"} />
-        <TextRow label="分類（主）" value={offering} />
-        <TextRow label="距離" value={distanceText} />
-        <TextRow label="再生状態" value={isPlaying ? "再生中" : "停止中"} />
-      </KeyValueList>
+      <TextRow label="再生状態" value={isPlaying ? "再生中" : "停止中"} />
     </section>
   );
 });

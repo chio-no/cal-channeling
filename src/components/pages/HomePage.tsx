@@ -1,6 +1,4 @@
 import React, { useRef } from "react";
-import { MainTemplate } from "../templates/MainTemplate";
-import { H1 } from "../atoms/Text";
 import {
   NearestRestaurantInfo,
   type NearestRestaurantInfoHandle,
@@ -14,14 +12,17 @@ export const HomePage: React.FC = () => {
   };
 
   return (
-    <div onClick={handleContainerClick} style={{ cursor: "pointer" }}>
-      <MainTemplate>
-        <header className="header">
-          <H1>cal-channeling</H1>
-        </header>
-        <div style={{ height: 12 }} />
-        <NearestRestaurantInfo ref={nearestRestaurantInfoRef} />
-      </MainTemplate>
+    <div
+      onClick={handleContainerClick}
+      style={{
+        cursor: "pointer",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        minHeight: "100vh",
+      }}
+    >
+      <NearestRestaurantInfo ref={nearestRestaurantInfoRef} />
     </div>
   );
 };

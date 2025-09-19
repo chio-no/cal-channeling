@@ -244,10 +244,13 @@ export const NearestRestaurantInfo = forwardRef<
   //     : formatDistance(targetPlaceState.distanceMeters);
 
   return (
-    <section className="section" aria-live="polite">
+    <div>
       <AudioVisualizer analyser={analyser} isPlaying={isPlaying} />
-      <div style={{ height: 16 }} />
-      <TextRow label="再生状態" value={isPlaying ? "再生中" : "停止中"} />
-    </section>
+      <div className="content-overlay">
+        <section className="section" aria-live="polite">
+          <TextRow label="再生状態" value={isPlaying ? "再生中" : "停止中"} />
+        </section>
+      </div>
+    </div>
   );
 });

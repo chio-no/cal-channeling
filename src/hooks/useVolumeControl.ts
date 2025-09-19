@@ -60,5 +60,5 @@ export function useVolumeControl(targetLocation?: LatLng) {
     [targetLocation]
   );
 
-  return { setup, updateVolume };
+  return { setup, updateVolume, gainnode: gainNodeRef.current };
 }

@@ -19,6 +19,7 @@ import { KeyValueList } from "../molecules/KeyValueList";
 import { TextRow } from "../atoms/TextRow";
 import { morseConvert } from "../../utils/convertMorse";
 import { CombinedSound } from "../../utils/combineSound";
+import { AudioVisualizer } from "../molecules/AudioVisualizer";
 
 function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
   // 1) primaryTypeDisplayName が来ていれば最優先（ローカライズ済み）
@@ -71,12 +72,17 @@ export const NearestRestaurantInfo = forwardRef<
     status: "idle",
   });
   const hasFetchedNearestPlace = useRef(false);
+  const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
 
   const periodicGeo = usePeriodicGeolocation(); // 5秒ごとに現在地を更新
 
   const p =
     targetPlaceState.status === "success" ? targetPlaceState.place : undefined;
-  const { setup: setupVolume, updateVolume } = useVolumeControl(p?.location);
+  const {
+    setup: setupVolume,
+    updateVolume,
+    gainnode: gainNode,
+  } = useVolumeControl(p?.location);
 
   useImperativeHandle(ref, () => ({
     handlePlayMorse,
@@ -161,6 +167,19 @@ export const NearestRestaurantInfo = forwardRef<
     };
   }, []);
 
+  useEffect(() => {
+    if (gainNode && isPlaying && !analyser) {
+      const currentAudioCtx = gainNode.context as AudioContext;
+      const newAnalyser = currentAudioCtx.createAnalyser();
+      newAnalyser.fftSize = 2048;
+
+      gainNode.disconnect();
+      gainNode.connect(newAnalyser);
+      newAnalyser.connect(currentAudioCtx.destination);
+      setAnalyser(newAnalyser);
+    }
+  }, [gainNode, isPlaying, analyser]);
+
   const offering = p
     ? inferOffering(p.types, p.primaryTypeDisplayName?.text)
     : "飲食店";
@@ -172,6 +191,7 @@ export const NearestRestaurantInfo = forwardRef<
         sourceNodeRef.current = null;
       }
       setIsPlaying(false);
+      setAnalyser(null);
       return;
     }
 
@@ -225,6 +245,8 @@ export const NearestRestaurantInfo = forwardRef<
 
   return (
     <section className="section" aria-live="polite">
+      <AudioVisualizer analyser={analyser} isPlaying={isPlaying} />
+      <div style={{ height: 16 }} />
       <KeyValueList>
         <TextRow label="店名" value={p!.displayName?.text ?? "-"} />
         <TextRow label="分類（主）" value={offering} />

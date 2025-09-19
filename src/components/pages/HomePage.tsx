@@ -19,9 +19,6 @@ export const HomePage: React.FC = () => {
         <header className="header">
           <H1>cal-channeling</H1>
         </header>
-        <P>
-          画面のどこかをクリックすると、最寄りのレストランまでの距離に応じた音声が再生／停止されます。
-        </P>
         <div style={{ height: 12 }} />
         <NearestRestaurantInfo ref={nearestRestaurantInfoRef} />
       </MainTemplate>

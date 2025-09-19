@@ -16,7 +16,7 @@ export function calculateVolume(
   const distance = haversineMeters(currentLatLng, targetLocation);
   // 距離が遠いほど音が小さくなるように音量を計算（線形減衰）
   // 距離が1500mで音量0、50mで音量100となるように線形計算
-  const rawVolume = (100 * (1000 - distance)) / (1000 - 50);
+  const rawVolume = (100 * (1500 - distance)) / (1500 - 50);
 
   // 計算結果を0から100の範囲内に収める（クランプ処理）
   const clampedVolume = Math.max(0, Math.min(100, rawVolume));

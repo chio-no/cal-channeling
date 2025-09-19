@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { MainTemplate } from "../templates/MainTemplate";
-import { H1, P } from "../atoms/Text";
+import { H1 } from "../atoms/Text";
 import {
   NearestRestaurantInfo,
   type NearestRestaurantInfoHandle,

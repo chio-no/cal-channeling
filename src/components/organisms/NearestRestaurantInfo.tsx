@@ -13,8 +13,8 @@ import {
 import { searchNearbyFood } from "../../services/googlePlaces";
 import type { NearestState } from "../../hooks/useNearestPlace";
 import { haversineMeters } from "../../utils/distance";
-import { Spinner } from "../atoms/Spinner";
-import { ErrorMessage } from "../atoms/ErrorMessage";
+// import { Spinner } from "../atoms/Spinner";
+// import { ErrorMessage } from "../atoms/ErrorMessage";
 import { morseConvert } from "../../utils/convertMorse";
 import { CombinedSound } from "../../utils/combineSound";
 import { AudioVisualizer } from "../molecules/AudioVisualizer";
@@ -224,13 +224,13 @@ export const NearestRestaurantInfo = forwardRef<
     setIsPlaying(true);
   };
 
-  const hasContent =
-    targetPlaceState.status !== "idle" && targetPlaceState.status !== "loading";
+  // const hasContent =
+  //   targetPlaceState.status !== "idle" && targetPlaceState.status !== "loading";
 
   return (
     <div>
       <AudioVisualizer analyser={analyser} isPlaying={isPlaying} />
-
+      {/* 
       <div className={`content-overlay ${hasContent ? "has-content" : ""}`}>
         {(() => {
           if (
@@ -247,7 +247,7 @@ export const NearestRestaurantInfo = forwardRef<
           }
           return <section></section>;
         })()}
-      </div>
+      </div> */}
     </div>
   );
 });

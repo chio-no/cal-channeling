@@ -4,9 +4,15 @@ import { AudioVisualizerCanvas } from "../atoms/AudioVisualizerCanvas";
 interface Props {
   analyser: AnalyserNode | null;
   isPlaying: boolean;
+  distance: number;
 }
 
-export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
+export const AudioVisualizer: React.FC<Props> = ({
+  analyser,
+  isPlaying,
+  distance,
+}) => {
+  console.log(distance);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useLayoutEffect(() => {
@@ -35,7 +41,7 @@ export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
       context.fillStyle = "#111";
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.lineWidth = 2;
-      context.strokeStyle = "#646cff";
+      context.strokeStyle = `rgb(${255 - distance},50,50)`;
       context.beginPath();
 
       if (isPlaying && analyser) {
@@ -69,7 +75,7 @@ export const AudioVisualizer: React.FC<Props> = ({ analyser, isPlaying }) => {
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [isPlaying, analyser]);
+  }, [isPlaying, analyser, distance]);
 
   return (
     <div className="visualizer-fullscreen">

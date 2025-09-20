@@ -70,6 +70,7 @@ export const NearestRestaurantInfo = forwardRef<
   });
   const hasFetchedNearestPlace = useRef(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+  const [distanceNum, setDistanceNum] = useState<number>(0);
 
   const periodicGeo = usePeriodicGeolocation(); // 5秒ごとに現在地を更新
 
@@ -111,6 +112,7 @@ export const NearestRestaurantInfo = forwardRef<
           const placeIndex = Math.floor(Math.random() * places.length);
           let best = places[placeIndex];
           console.log("selected place:", best);
+          alert(best.displayName?.text ?? "no name");
           let bestDist = Number.POSITIVE_INFINITY;
           for (const place of places) {
             const loc = place.location;
@@ -151,7 +153,7 @@ export const NearestRestaurantInfo = forwardRef<
     if (periodicGeo.status === "success" && p?.location) {
       updateVolume(periodicGeo.coords);
       const newDistance = haversineMeters(periodicGeo.coords, p.location);
-      console.log("distance updated:", newDistance);
+      setDistanceNum(newDistance);
       // setDistance(newDistance);
     }
   }, [periodicGeo, p?.location, updateVolume]);
@@ -232,7 +234,11 @@ export const NearestRestaurantInfo = forwardRef<
 
   return (
     <div>
-      <AudioVisualizer analyser={analyser} isPlaying={isPlaying} />
+      <AudioVisualizer
+        analyser={analyser}
+        isPlaying={isPlaying}
+        distance={distanceNum}
+      />
       {/* 
       <div className={`content-overlay ${hasContent ? "has-content" : ""}`}>
         {(() => {

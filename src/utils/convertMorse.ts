@@ -40,6 +40,7 @@ export function morseConvert(originChar: string | undefined): string[] {
     //morseへの変換
     for (const char of underRemoveStr ?? "error") {
       morse.push(...morseCodeObj[char]);
+      morse.push("2");
     }
   }
   return morse;

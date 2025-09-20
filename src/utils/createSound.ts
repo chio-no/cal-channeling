@@ -28,14 +28,8 @@ export function createSound(
     const freq = 220 + Math.random() * 660; // random frequency between 220Hz and 880Hz
     for (let i = 0; i < length; i++) {
       const t = i / sampleRate;
-      // Randomly choose waveform type
-      const waveType = Math.floor(Math.random() * 2);
       let value = 0;
-      if (waveType === 0) {
-        value = Math.sin(2 * Math.PI * freq * t); // sine
-      } else if (waveType === 1) {
-        value = Math.sign(Math.sin(2 * Math.PI * freq * t)); // square
-      }
+      value = Math.sin(2 * Math.PI * freq * t); // sine
       // Envelope for smooth fade in/out
       const envelope = Math.sin((Math.PI * i) / length);
       data[i] = value * envelope;

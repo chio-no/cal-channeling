@@ -8,10 +8,10 @@ export function CombinedSound(
     return null;
   }
 
-  // 1. 各inputに対してcreateSoundを呼び出し、AudioBufferの配列を生成
+  // 各inputに対してcreateSoundを呼び出し、AudioBufferの配列を生成
   const audioBuffers = inputs.map((input) => createSound(audioCtx, input));
 
-  // 2. 連結後のAudioBufferの情報を計算
+  // 連結後のAudioBufferの情報を計算
   const numberOfChannels = audioBuffers[0].numberOfChannels;
   const sampleRate = audioBuffers[0].sampleRate;
   const totalLength = audioBuffers.reduce(
@@ -19,14 +19,14 @@ export function CombinedSound(
     0
   );
 
-  // 3. 連結後の音声データを格納する新しいAudioBufferを作成
+  // 連結後の音声データを格納する新しいAudioBufferを作成
   const combinedBuffer = audioCtx.createBuffer(
     numberOfChannels,
     totalLength,
     sampleRate
   );
 
-  // 4. 各AudioBufferのデータを新しいバッファにコピー
+  // 各AudioBufferのデータを新しいバッファにコピー
   let offset = 0;
   for (const buffer of audioBuffers) {
     for (let channel = 0; channel < numberOfChannels; channel++) {
@@ -38,6 +38,6 @@ export function CombinedSound(
     offset += buffer.length;
   }
 
-  // 5. 連結されたAudioBufferを返す
+  // 連結されたAudioBufferを返す
   return combinedBuffer;
 }

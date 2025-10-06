@@ -13,17 +13,13 @@ import {
 import { searchNearbyFood } from "../../services/googlePlaces";
 import type { NearestState } from "../../hooks/useNearestPlace";
 import { haversineMeters } from "../../utils/distance";
-// import { Spinner } from "../atoms/Spinner";
-// import { ErrorMessage } from "../atoms/ErrorMessage";
 import { morseConvert } from "../../utils/convertMorse";
 import { CombinedSound } from "../../utils/combineSound";
 import { AudioVisualizer } from "../molecules/AudioVisualizer";
 
 function inferOffering(types?: string[], primaryTypeDisplay?: string): string {
-  // 1) primaryTypeDisplayName が来ていれば最優先（ローカライズ済み）
   if (primaryTypeDisplay) return primaryTypeDisplay;
 
-  // 2) types から代表的なものを拾う（例: sushi_restaurant → 寿司）
   const map: Record<string, string> = {
     sushi_restaurant: "寿司",
     ramen_restaurant: "ラーメン",
@@ -154,7 +150,6 @@ export const NearestRestaurantInfo = forwardRef<
       updateVolume(periodicGeo.coords);
       const newDistance = haversineMeters(periodicGeo.coords, p.location);
       setDistanceNum(newDistance);
-      // setDistance(newDistance);
     }
   }, [periodicGeo, p?.location, updateVolume]);
 
@@ -229,9 +224,6 @@ export const NearestRestaurantInfo = forwardRef<
     setIsPlaying(true);
   };
 
-  // const hasContent =
-  //   targetPlaceState.status !== "idle" && targetPlaceState.status !== "loading";
-
   return (
     <div>
       <AudioVisualizer
@@ -239,24 +231,6 @@ export const NearestRestaurantInfo = forwardRef<
         isPlaying={isPlaying}
         distance={distanceNum}
       />
-      {/* 
-      <div className={`content-overlay ${hasContent ? "has-content" : ""}`}>
-        {(() => {
-          if (
-            targetPlaceState.status === "idle" ||
-            targetPlaceState.status === "loading"
-          ) {
-            return <Spinner />;
-          }
-          if (targetPlaceState.status === "error") {
-            return <ErrorMessage message={targetPlaceState.message} />;
-          }
-          if (targetPlaceState.status === "empty") {
-            return <p>周辺に対象の飲食店が見つかりませんでした。</p>;
-          }
-          return <section></section>;
-        })()}
-      </div> */}
     </div>
   );
 });

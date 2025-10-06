@@ -2,7 +2,7 @@ import type { Place } from "../types/place";
 
 const ENDPOINT = "https://places.googleapis.com/v1/places:searchNearby";
 
-// 取得するフィールド（FieldMask は必須）
+// FieldMaskが必須
 const FIELD_MASK = [
   "places.displayName",
   "places.location",
@@ -14,9 +14,8 @@ const FIELD_MASK = [
 export interface NearbyParams {
   lat: number;
   lng: number;
-  radiusMeters?: number; // default 1500
-  // 日本語UIにしたい場合は regionCode: 'JP' を推奨（Accept-Languageは実装環境に依存）
-  regionCode?: string; // e.g. 'JP'
+  radiusMeters?: number;
+  regionCode?: string;
 }
 
 export async function searchNearbyFood(params: NearbyParams): Promise<Place[]> {
@@ -26,10 +25,10 @@ export async function searchNearbyFood(params: NearbyParams): Promise<Place[]> {
   }
 
   const body = {
-    // 飲食系タイプのみを対象
+    // 飲食系のみを対象
     includedTypes: ["restaurant", "cafe", "bakery", "bar"],
-    // 距離順ソート（返却順）。後段でも念のため距離計算して最小を選びます
-    rankPreference: "DISTANCE",
+    // 人気順でソート
+    rankPreference: "POPULARITY",
     maxResultCount: 20,
     regionCode: params.regionCode ?? "JP",
     locationRestriction: {
@@ -44,11 +43,8 @@ export async function searchNearbyFood(params: NearbyParams): Promise<Place[]> {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      // Places API (New) は X-Goog-FieldMask が必須
       "X-Goog-FieldMask": FIELD_MASK,
       "X-Goog-Api-Key": apiKey,
-      // 言語ローカライズは必要に応じて Accept-Language を追加してもよい
-      // 'Accept-Language': 'ja'
     },
     body: JSON.stringify(body),
   });

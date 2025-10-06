@@ -5,9 +5,9 @@ export function createSound(
   let duration = 0;
   if (input === "0" || input === "2") {
     duration = 0.2; // short beep
-    //モールス符号では文字間は短音分の隙間を開けるので
+    //モールス符号では文字間は短音分の隙間を開けるのでこの実装
   } else {
-    duration = 1.0; // long beep
+    duration = 0.6; // 長点は短点の3倍の長さとなるように定められている
   }
 
   const sampleRate = audioCtx.sampleRate;

@@ -23,6 +23,6 @@ export function formatDistance(meters: number): string {
     return `約 ${Math.round(meters)} m`;
   }
   const km = meters / 1000;
-  const rounded = Math.round(km * 10) / 10; // 1 decimal
+  const rounded = Math.round(km * 10) / 10;
   return `約 ${rounded} km`;
 }

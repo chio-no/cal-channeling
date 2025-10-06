@@ -40,7 +40,6 @@ export function usePeriodicGeolocation() {
     // 5秒ごとに位置情報を更新
     const intervalId = setInterval(getLocation, 5000);
 
-    // クリーンアップ関数
     return () => {
       clearInterval(intervalId);
     };

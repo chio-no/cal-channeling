@@ -109,7 +109,7 @@ body {
 .content-overlay {
   position: relative;
   z-index: 1;
-  background-color: transparent; /* デフォルトは透明 */
+  background-color: transparent;
   padding: 1rem;
   border-radius: 8px;
   text-align: center;
@@ -117,10 +117,5 @@ body {
 }
 
 .content-overlay.has-content {
-  background-color: rgba(
-    255,
-    255,
-    255,
-    0.8
-  ); /* コンテンツがある場合のみ背景色を適用 */
+  background-color: rgba(255, 255, 255, 0.8);
 }

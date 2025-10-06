@@ -35,6 +35,7 @@ export function morseConvert(originChar: string | undefined): string[] {
     }
   } else {
     //アンダーバーがあればその前をとる
+    // 例: "japanese_restraunt" -> "japanese"
     const underRemoveStr = originChar?.split("_")[0];
 
     //morseへの変換

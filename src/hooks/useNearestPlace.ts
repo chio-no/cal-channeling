@@ -36,7 +36,7 @@ export function useNearestPlace(lat?: number, lng?: number) {
           setState({ status: "empty" });
           return;
         }
-        // 念のためクライアント側でも最短距離を算出
+
         const here = { latitude: lat!, longitude: lng! };
         let best = places[0];
         let bestDist = Number.POSITIVE_INFINITY;

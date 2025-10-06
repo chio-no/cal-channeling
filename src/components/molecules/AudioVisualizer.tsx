@@ -42,6 +42,7 @@ export const AudioVisualizer: React.FC<Props> = ({
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.lineWidth = 2;
       context.strokeStyle = `rgb(${255 - distance},50,50)`;
+      //単純なdistanceだと255mを超えるが、振幅→色という順で重要だからこのままで放置
       context.beginPath();
 
       if (isPlaying && analyser) {
